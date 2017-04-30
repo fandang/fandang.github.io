@@ -87,7 +87,7 @@ select {
 	var colors = 25 * [1,2,3,4,5,6,7,8,9,10];
 	var green_colors = ["#E9F7EF","#D4EFDF","#A9DFBF","#7DCEA0","#52BE80","#27AE60","#229954","#1E8449","#196F3D","#145A32"];
 
- 	var noCacheURL = "/debt_gdp_2005.csv" + '?' + Math.floor(Math.random() * 1000);
+ 	var noCacheURL = "debt_gdp_2005.csv" + '?' + Math.floor(Math.random() * 1000);
 
 	d3.csv(noCacheURL, function(data) {
 		var countryColors = [];

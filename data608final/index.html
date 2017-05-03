@@ -151,7 +151,7 @@
             var countryTooltip = d3.select("body").append("div").attr("class", "countryTooltip");
             var selectBoxesDiv = d3.select("body").append("div");
 
-            d3.select("#titleTextID").text("Gov Debt Pct. of GDP");
+            d3.select("#titleTextID").text("Health Expenditure Per Capita");
             selectBoxesDiv.append("br")
 
             queue().defer(d3.json, "world-110m.json").defer(d3.tsv, "world-110m-country-names.tsv").await(ready);
@@ -401,9 +401,12 @@
             };
         </script>
 
-        <div><i>(Country is colored gray when statistic is not available)</i></div>
-        <div><i>All data scraped and merged from <a href="http://data.worldbank.org/indicator" target="_blank">http://data.worldbank.org/indicator</a></i></div>
     </div>
+	<ul>
+		<li><i>(Country is colored gray when statistic is not available)</i></li>
+		<li><i>All data scraped and merged from <a href="http://data.worldbank.org/indicator" target="_blank">http://data.worldbank.org/indicator</a></i></li>
+	</ul>
+
 </body>
 
 </html>

@@ -84,7 +84,6 @@
         <i>(Mouse over countries to see value of selected statistic)</i>
         <h1 id="titleTextID">titleTextID</h1>
 
-
         <fieldset>
 
             <div>
@@ -106,7 +105,7 @@
             </div>
 
             <h1 id="currentYearHeader">Year:</h1>
-            <input id="yearRange" type="range" step="1" min="1960" max="2015" value="1960" />
+            <input id="yearRange" type="range" step="1" />
             <input id="yearRangePlayBtn" type="button" value="Play!" />
 
         </fieldset>
@@ -114,7 +113,9 @@
         <div>&nbsp;</div>
 
         <script language="JavaScript">
-        	var ANIMATION_TIMEOUT = 350;
+			var START_YEAR = 1990; // 1960;
+			var END_YEAR = 2015;
+        	var ANIMATION_TIMEOUT = 500;
             var green_colors_health_expenditures = ["#E9F7EF", "#D4EFDF", "#A9DFBF", "#7DCEA0", "#52BE80", "#27AE60", "#229954", "#1E8449", "#196F3D", "#145A32"];
             var red_colors_life_exp_at_birth = ["#AA0000", "#990000", "#880000", "#770000", "#660000", "#550000", "#440000", "#330000", "#220000", "#110000"];
             var purple_colors_debt_gdp = ["#a569bd", "#8e44ad", "#884ea0", "#7d3c98", "#76448a", "#6c3483", "#633974", "#5b2c6f", "#512e5f", "#4a235a"];
@@ -168,6 +169,31 @@
                     option.property("value", d.id);
                 });
 
+				d3.select('#countries').property('value', '840');
+				d3.select("#countries").on("show", function() {
+					alert('LOAD');
+					var rotate = projection.rotate(),
+					focusedCountry = country(countries, this),
+					p = d3.geo.centroid(focusedCountry);
+
+                        (function transition() {
+                            d3.transition()
+                                .duration(2500)
+                                .tween("rotate", function() {
+                                    var r = d3.interpolate(projection.rotate(), [-p[0], -p[1]]);
+                                    return function(t) {
+                                        projection.rotate(r(t));
+                                        svg.selectAll("path").attr("d", path)
+                                            .classed("focused", function(d, i) {
+                                                return d.id == focusedCountry.id ? focused = d : false;
+                                            });
+                                    };
+                                })
+                        })();
+
+				});
+
+
                 function getChartTypeSelectionText() {
                     var chartTypeSelectedIndex = document.getElementById("charts");
                     var chartTypeSelectedOptionText = chartTypeSelectedIndex.options[chartTypeSelectedIndex.selectedIndex].text;
@@ -203,7 +229,9 @@
                 updateAll(2005);
 
                 function updateAll(yearToShow) {
-                    console.log("UPDATE ALL[year=" + yearToShow + "]");
+					if (DEBUG) {
+	                    console.log("UPDATE ALL[year=" + yearToShow + "]");
+					}
                     var noCacheURL = "data.csv" + '?' + Math.floor(Math.random() * 1000);
                     d3.csv(noCacheURL, function(data) {
                         var countryColors = [];
@@ -253,8 +281,8 @@
                 }
 
                 function playYears() {
-                    document.getElementById('yearRange').value = 1960;
-                    showForYears(1960, 2015);
+                    document.getElementById('yearRange').value = START_YEAR;
+                    showForYears(START_YEAR, END_YEAR);
                 }
 
                 function showForYears(currentYear, endYear) {
@@ -274,7 +302,9 @@
 
                 function getCountryFillColor(obj, countryColors) {
                     if (countryColors[countryById[obj.id]]) {
-                        console.log("returning color: " + countryColors[countryById[obj.id]])
+						if (DEBUG) {
+	                        console.log("returning color: " + countryColors[countryById[obj.id]])
+						}
                         return countryColors[countryById[obj.id]];
                     }
                     return "#CCCCCC";
@@ -330,6 +360,9 @@
                         setChartColorBox();
                     });
 
+
+					d3.select("#yearRange").attr("min",START_YEAR).attr("max", END_YEAR).attr("value",START_YEAR);
+
                     d3.select("select#countries").on("change", function() {
                         var rotate = projection.rotate(),
                             focusedCountry = country(countries, this),
@@ -363,13 +396,13 @@
                         }
                     };
 
-
                 }
-
 
             };
         </script>
+
         <div><i>(Country is colored gray when statistic is not available)</i></div>
+        <div><i>All data scraped and merged from <a href="http://data.worldbank.org/indicator" target="_blank">http://data.worldbank.org/indicator</a></i></div>
     </div>
 </body>
 

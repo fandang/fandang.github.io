@@ -204,7 +204,7 @@
 
                 function updateAll(yearToShow) {
                     console.log("UPDATE ALL[year=" + yearToShow + "]");
-                    var noCacheURL = "/data.csv" + '?' + Math.floor(Math.random() * 1000);
+                    var noCacheURL = "data.csv" + '?' + Math.floor(Math.random() * 1000);
                     d3.csv(noCacheURL, function(data) {
                         var countryColors = [];
                         var dataForYear = data.filter(function(d, i) {

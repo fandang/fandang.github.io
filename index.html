@@ -20,13 +20,52 @@ body {
 	border:none;
 }
 </style>
+
+<style>
+div.gallery {
+    margin: 5px;
+    border: 1px solid #ccc;
+    float: left;
+    width: 180px;
+}
+
+div.gallery:hover {
+    border: 1px solid #777;
+}
+
+div.gallery img {
+    width: 100%;
+    height: auto;
+}
+
+div.desc {
+    padding: 15px;
+    text-align: center;
+}
+</style>
 </head>
 <body>
-<h1>Dan Fanelli's GitHub Previews</h1>
-<span class="thumbs">
-<a href="data608final/index.html" target="_top">
-<h4>World Stats Through Time</h4>
-<img src="thumbs/DATA608_WorldStatsAnimation.png" />
-</span>
+
+<h1>Dan Fanelli's GitHub Gallery</h1>
+
+<div class="gallery">
+  <a href="data608final/index.html" target="_top">
+    <img src="thumbs/DATA608_WorldStatsAnimation.png" width="300" height="300">
+  </a>
+  <div class="desc">World Stats Through Time</div>
+</div>
+
+<div class="gallery">
+  <a href="https://github.com/fandang/DATA604/blob/master/final_project/DATA604_Final_Paper_Berk_Hamski_Fanelli_Hong.pdf" target="_top">
+    <img src="thumbs/DATA604_InverseModelEnergySavings.png" width="300" height="300">
+  </a>
+  <div class="desc">Predicting Energy Savings Using Inverse Modelling Simulation</div>
+</div>
+
+
+
+
+
+
 </body>
 </html>

@@ -1,0 +1,27 @@
+http-server & -c-1
+
+
+- create a public visualization (static or interactive) using data relevant
+to a current policy, business, or justice issue.
+
+- **** ROOT CAUSES:
+- **** world map with world stats from: data.worldbank.org
+- ggvis = use checkboxes for icon indicators per stat!!!! then update the global map!!!!!
+- 
+
+
+- interactive X and Y axis - let user choose which 2 to check?
+	- Lotto by state
+	- Party by state
+	- Taxes by state
+	- big mac index salary by state
+	- home prices by state
+	- 
+
+- "Death and Taxes" - mortality rates along with tax rates
+- https://www.isidewith.com/polls
+- "Historic National Debt"
+	- 
+	
+Call it "INVESTING IN OUR COUNTRY": "when does spending pay?"	
+

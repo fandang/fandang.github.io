@@ -24,23 +24,21 @@ body {
 <style>
 div.gallery {
     margin: 5px;
-    border: 1px solid #ccc;
+    border: 2px solid #aaa;
     float: left;
-    width: 180px;
+    padding:10px;
+	width:200px;
 }
 
-div.gallery:hover {
-    border: 1px solid #777;
-}
-
-div.gallery img {
-    width: 100%;
-    height: auto;
+div.thumb img {
+    width: 200px;
+    height: 200px;
 }
 
 div.desc {
-    padding: 15px;
+    padding: 10px;
     text-align: center;
+    height:50px;
 }
 </style>
 </head>
@@ -50,23 +48,23 @@ div.desc {
 
 <div class="gallery">
   <a href="data608final/index.html" target="_top">
-    <img src="thumbs/DATA608_WorldStatsAnimation.png" width="300" height="300">
+    <div class="thumb"><img src="thumbs/DATA608_WorldStatsAnimation.png"></div>
+  	<div class="desc">World Stats Through Time</div>
   </a>
-  <div class="desc">World Stats Through Time</div>
 </div>
 
 <div class="gallery">
   <a href="https://github.com/fandang/DATA604/blob/master/final_project/DATA604_Final_Paper_Berk_Hamski_Fanelli_Hong.pdf" target="_top">
-    <img src="thumbs/DATA604_InverseModelEnergySavings.png" width="300" height="300">
+    <div class="thumb"><img src="thumbs/DATA604_InverseModelEnergySavings.png"></div>
+	<div class="desc">Predicting Energy Savings Using Inverse Modelling Simulation</div>
   </a>
-  <div class="desc">Predicting Energy Savings Using Inverse Modelling Simulation</div>
 </div>
 
 <div class="gallery">
   <a href="https://github.com/fandang/DATA604/blob/master/homeworks/DATA_604_HW_6.pdf" target="_top">
-    <img src="thumbs/DATA604_HW6_SimeoModel.png" width="300" height="300">
+    <div class="thumb"><img src="thumbs/DATA604_HW6_SimeoModel.png" /></div>
+  	<div class="desc">Some Simeo Modelling</div>
   </a>
-  <div class="desc">Some Simeo Modelling</div>
 </div>
 
 <!--

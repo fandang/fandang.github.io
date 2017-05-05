@@ -81,8 +81,8 @@
 
     <div id="app">
 
-        <i>(Mouse over countries to see value of selected statistic)</i>
         <h1 id="titleTextID">titleTextID</h1>
+        <h1 id="currentYearHeader">Year:</h1>
 
         <fieldset>
 
@@ -104,15 +104,20 @@
                 <select class="selectBoxClazz" name="countries" id="countries"></select>
             </div>
 
-            <h1 id="currentYearHeader">Year:</h1>
             <input id="yearRange" type="range" step="1" />
             <input id="yearRangePlayBtn" type="button" value="Play!" />
+            <input id="yearRangePauseBtn" type="button" value="Pause" />
+
+			<div id="colorKey" style="font-weight:bold;padding:5px;">MIN:&nbsp;&nbsp;<span id="colorKeyMinLabel"></span>&nbsp;&nbsp;<span id="colorKeyMinColorbox">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;&nbsp;MAX:&nbsp;&nbsp;<span id="colorKeyMaxLabel"></span>&nbsp;&nbsp;<span id="colorKeyMaxColorbox">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+			<div id="colorKeyALL" style="padding:5px;"></div>
 
         </fieldset>
+
 
         <div>&nbsp;</div>
 
         <script language="JavaScript">
+			var APP_PAUSED = false;
 			var START_YEAR = 1990; // 1960;
 			var END_YEAR = 2015;
         	var ANIMATION_TIMEOUT = 500;
@@ -229,12 +234,17 @@
                 updateAll(2005);
 
                 function updateAll(yearToShow) {
+					var colorKeyMIN;
+					var colorKeyMAX;
+					var colorsArray;
+
 					if (DEBUG) {
 	                    console.log("UPDATE ALL[year=" + yearToShow + "]");
 					}
                     var noCacheURL = "data.csv" + '?' + Math.floor(Math.random() * 1000);
                     d3.csv(noCacheURL, function(data) {
                         var countryColors = [];
+                        var countryValues = [];
                         var dataForYear = data.filter(function(d, i) {
                             if (d["YEAR"] == yearToShow) {
                                 return d;
@@ -245,38 +255,171 @@
                             console.log("***** (COUNTRY,YEAR,HEALTH_EXPENDITURE_PER_CAPITA,LIFE_EXPECTANCY_AT_BIRTH,GOV_DEBT_PCT_OF_GDP,GDP_PER_CAPITA,IMPORTS_PCT_OF_GDP,GOV_ED_SPEND_PCT_GDP) *****");
                         }
 
+						var minHealthExpPerCapita = -1;
+						var maxHealthExpPerCapita = -1;
+						var minLifeExpectancyAtBirth = -1;
+						var maxLifeExpectancyAtBirth = -1;
+						var minGovDebtPctOfGDP = -1;
+						var maxGovDebtPctOfGDP = -1;
+						var minGdpPerCapita = -1;
+						var maxGdpPerCapita = -1;
+						var minImportsPctOfGDP = -1;
+						var maxImportsPctOfGDP = -1;
+						var minGovEdSpendPctGDP = -1;
+						var maxGovEdSpendPctGDP = -1;
+
+                        dataForYear.forEach(function(d) {
+                        	// INITIALIZE the mins and maxes if NULL
+                        	if(minHealthExpPerCapita == -1 && d.HEALTH_EXPENDITURE_PER_CAPITA != 'NA'){
+								minHealthExpPerCapita = d.HEALTH_EXPENDITURE_PER_CAPITA;
+                        	}
+                        	if(maxHealthExpPerCapita == -1 && d.HEALTH_EXPENDITURE_PER_CAPITA != 'NA'){
+								maxHealthExpPerCapita = d.HEALTH_EXPENDITURE_PER_CAPITA;
+                        	}
+                        	if(minLifeExpectancyAtBirth == -1 && d.LIFE_EXPECTANCY_AT_BIRTH != 'NA'){
+								minLifeExpectancyAtBirth = d.LIFE_EXPECTANCY_AT_BIRTH;
+                        	}
+                        	if(maxLifeExpectancyAtBirth == -1 && d.LIFE_EXPECTANCY_AT_BIRTH != 'NA'){
+								maxLifeExpectancyAtBirth = d.LIFE_EXPECTANCY_AT_BIRTH;
+                        	}
+                        	if(minGovDebtPctOfGDP == -1 && d.GOV_DEBT_PCT_OF_GDP != 'NA'){
+								minGovDebtPctOfGDP = d.GOV_DEBT_PCT_OF_GDP;
+                        	}
+                        	if(maxGovDebtPctOfGDP == -1 && d.GOV_DEBT_PCT_OF_GDP != 'NA'){
+								maxGovDebtPctOfGDP = d.GOV_DEBT_PCT_OF_GDP;
+                        	}
+                        	if(minGdpPerCapita == -1 && d.GDP_PER_CAPITA != 'NA'){
+								minGdpPerCapita = d.GDP_PER_CAPITA;
+                        	}
+                        	if(maxGdpPerCapita == -1 && d.GDP_PER_CAPITA != 'NA'){
+								maxGdpPerCapita = d.GDP_PER_CAPITA;
+                        	}
+                        	if(minImportsPctOfGDP == -1 && d.IMPORTS_PCT_OF_GDP != 'NA'){
+								minImportsPctOfGDP = d.IMPORTS_PCT_OF_GDP;
+                        	}
+                        	if(maxImportsPctOfGDP == -1 && d.IMPORTS_PCT_OF_GDP != 'NA'){
+								maxImportsPctOfGDP = d.IMPORTS_PCT_OF_GDP;
+                        	}
+                        	if(minGovEdSpendPctGDP == -1 && d.GOV_ED_SPEND_PCT_GDP != 'NA'){
+								minGovEdSpendPctGDP = d.GOV_ED_SPEND_PCT_GDP;
+                        	}
+                        	if(maxGovEdSpendPctGDP == -1 && d.GOV_ED_SPEND_PCT_GDP != 'NA'){
+								maxGovEdSpendPctGDP = d.GOV_ED_SPEND_PCT_GDP;
+                        	}
+
+							// stat 1:
+							if(d.HEALTH_EXPENDITURE_PER_CAPITA != 'NA' && d.HEALTH_EXPENDITURE_PER_CAPITA < minHealthExpPerCapita){
+								minHealthExpPerCapita = d.HEALTH_EXPENDITURE_PER_CAPITA;
+							}
+							if(d.HEALTH_EXPENDITURE_PER_CAPITA != 'NA' && d.HEALTH_EXPENDITURE_PER_CAPITA > maxHealthExpPerCapita){
+								maxHealthExpPerCapita = d.HEALTH_EXPENDITURE_PER_CAPITA;
+							}
+							// stat 2:
+							if(d.LIFE_EXPECTANCY_AT_BIRTH != 'NA' && d.LIFE_EXPECTANCY_AT_BIRTH < minLifeExpectancyAtBirth){
+								minLifeExpectancyAtBirth = d.LIFE_EXPECTANCY_AT_BIRTH;
+							}
+							if(d.LIFE_EXPECTANCY_AT_BIRTH != 'NA' && d.LIFE_EXPECTANCY_AT_BIRTH > maxLifeExpectancyAtBirth){
+								maxLifeExpectancyAtBirth = d.LIFE_EXPECTANCY_AT_BIRTH;
+							}
+							// stat 3:
+							if(d.GOV_DEBT_PCT_OF_GDP != 'NA' && d.GOV_DEBT_PCT_OF_GDP < minGovDebtPctOfGDP){
+								minGovDebtPctOfGDP = d.GOV_DEBT_PCT_OF_GDP;
+							}
+							if(d.GOV_DEBT_PCT_OF_GDP != 'NA' && d.GOV_DEBT_PCT_OF_GDP > maxGovDebtPctOfGDP){
+								maxGovDebtPctOfGDP = d.GOV_DEBT_PCT_OF_GDP;
+							}
+							// stat 4:
+							if(d.GDP_PER_CAPITA != 'NA' && d.GDP_PER_CAPITA < minGdpPerCapita){
+								minGdpPerCapita = d.GDP_PER_CAPITA;
+							}
+							if(d.GDP_PER_CAPITA != 'NA' && d.GDP_PER_CAPITA > maxGdpPerCapita){
+								maxGdpPerCapita = d.GDP_PER_CAPITA;
+							}
+							// stat 5:
+							if(d.IMPORTS_PCT_OF_GDP != 'NA' && d.IMPORTS_PCT_OF_GDP < minImportsPctOfGDP){
+								minImportsPctOfGDP = d.IMPORTS_PCT_OF_GDP;
+							}
+							if(d.IMPORTS_PCT_OF_GDP != 'NA' && d.IMPORTS_PCT_OF_GDP > maxImportsPctOfGDP){
+								maxImportsPctOfGDP = d.IMPORTS_PCT_OF_GDP;
+							}
+							// stat 6:
+							if(d.GOV_ED_SPEND_PCT_GDP != 'NA' && d.GOV_ED_SPEND_PCT_GDP < minGovEdSpendPctGDP){
+								minGovEdSpendPctGDP = d.GOV_ED_SPEND_PCT_GDP;
+							}
+							if(d.GOV_ED_SPEND_PCT_GDP != 'NA' && d.GOV_ED_SPEND_PCT_GDP > maxGovEdSpendPctGDP){
+								maxGovEdSpendPctGDP = d.GOV_ED_SPEND_PCT_GDP;
+							}
+						});
+
                         dataForYear.forEach(function(d) {
                             var selectedChartOption = getChartTypeSelectionValue();
                             if (DEBUG) {
                                 console.log(d.COUNTRY + "," + d.YEAR + "," + d.HEALTH_EXPENDITURE_PER_CAPITA + "," + d.LIFE_EXPECTANCY_AT_BIRTH + "," + d.GOV_DEBT_PCT_OF_GDP + "," + d.GDP_PER_CAPITA + "," + d.IMPORTS_PCT_OF_GDP + "," + d.GOV_ED_SPEND_PCT_GDP);
                                 console.log("CHART: " + selectedChartOption)
                             }
-                            statToShow = "Don't know what stat to show!!!";
+                            statToShow = 0;
+                            statToShowNotNormalized = 0;
                             colorToShow = "pink";
+
                             if (selectedChartOption == "HEALTH_EXPENDITURE_PER_CAPITA") {
-                                statToShow = d.HEALTH_EXPENDITURE_PER_CAPITA;
-                                colorToShow = green_colors_health_expenditures;
+								console.log(minHealthExpPerCapita + ' ( ' + d.HEALTH_EXPENDITURE_PER_CAPITA + ' ) ' + maxHealthExpPerCapita);
+                                statToShowNotNormalized = d.HEALTH_EXPENDITURE_PER_CAPITA;
+                                statToShow = (d.HEALTH_EXPENDITURE_PER_CAPITA - minHealthExpPerCapita) / (maxHealthExpPerCapita - minHealthExpPerCapita);
+                                colorsArray = colorToShow = green_colors_health_expenditures;
+								colorKeyMIN = minHealthExpPerCapita;
+								colorKeyMAX = maxHealthExpPerCapita;
                             } else if (selectedChartOption == "LIFE_EXPECTANCY_AT_BIRTH") {
-                                statToShow = d.LIFE_EXPECTANCY_AT_BIRTH;
-                                colorToShow = red_colors_life_exp_at_birth;
+                                statToShowNotNormalized = d.LIFE_EXPECTANCY_AT_BIRTH;
+                                statToShow = (d.LIFE_EXPECTANCY_AT_BIRTH - minLifeExpectancyAtBirth) / (maxLifeExpectancyAtBirth - minLifeExpectancyAtBirth);
+                                colorsArray = colorToShow = red_colors_life_exp_at_birth;
+								colorKeyMIN = minLifeExpectancyAtBirth;
+								colorKeyMAX = maxLifeExpectancyAtBirth;
                             } else if (selectedChartOption == "GOV_DEBT_PCT_OF_GDP") {
-                                statToShow = d.GOV_DEBT_PCT_OF_GDP;
-                                colorToShow = purple_colors_debt_gdp;
+                                statToShowNotNormalized = d.GOV_DEBT_PCT_OF_GDP;
+                                statToShow = (d.GOV_DEBT_PCT_OF_GDP - minGovDebtPctOfGDP) / (maxGovDebtPctOfGDP - minGovDebtPctOfGDP);
+                                colorsArray = colorToShow = purple_colors_debt_gdp;
+								colorKeyMIN = minGovDebtPctOfGDP;
+								colorKeyMAX = maxGovDebtPctOfGDP;
                             } else if (selectedChartOption == "GDP_PER_CAPITA") {
-                                statToShow = d.GDP_PER_CAPITA;
-                                colorToShow = yellow_colors_gdp_per_capita;
+                                statToShowNotNormalized = d.GDP_PER_CAPITA;
+                                statToShow = (d.GDP_PER_CAPITA - minGdpPerCapita) / (maxGdpPerCapita - minGdpPerCapita);
+                                colorsArray = colorToShow = yellow_colors_gdp_per_capita;
+								colorKeyMIN = minGdpPerCapita;
+								colorKeyMAX = maxGdpPerCapita;
                             } else if (selectedChartOption == "IMPORTS_PCT_OF_GDP") {
-                                statToShow = d.IMPORTS_PCT_OF_GDP;
-                                colorToShow = orange_colors_imports_2_gdp;
+                                statToShowNotNormalized = d.IMPORTS_PCT_OF_GDP;
+                                statToShow = (d.IMPORTS_PCT_OF_GDP - minImportsPctOfGDP) / (maxImportsPctOfGDP - minImportsPctOfGDP);
+                                colorsArray = colorToShow = orange_colors_imports_2_gdp;
+								colorKeyMIN = minImportsPctOfGDP;
+								colorKeyMAX = maxImportsPctOfGDP;
                             } else if (selectedChartOption == "GOV_ED_SPEND_PCT_GDP") {
-                                statToShow = d.GOV_ED_SPEND_PCT_GDP;
-                                colorToShow = blue_colors_education_pct_gdp;
+                                statToShowNotNormalized = d.GOV_ED_SPEND_PCT_GDP;
+                                statToShow = (d.GOV_ED_SPEND_PCT_GDP - minGovEdSpendPctGDP) / (maxGovEdSpendPctGDP - minGovEdSpendPctGDP);
+                                colorsArray = colorToShow = blue_colors_education_pct_gdp;
+								colorKeyMIN = minGovEdSpendPctGDP;
+								colorKeyMAX = maxGovEdSpendPctGDP;
+                            } else {
+                            	alert("not handling chart type selection: " + selectedChartOption);
                             }
 
-                            countryColors[d.COUNTRY] = colorToShow[Math.floor(statToShow % colorToShow.length)];
+							console.log('statToShow = ' + statToShow)
+							// The values were normalized to the 0 to 1 range, so now multiply by 10 to see which array index to use
+                            countryColors[d.COUNTRY] = colorToShow[Math.floor(statToShow * 10)];
+                            countryValues[d.COUNTRY] = statToShowNotNormalized;
                         });
 
-                        repaintMap(countryColors);
+                        repaintMap(countryColors, countryValues);
+						d3.select("#colorKeyMinLabel").text(parseFloat(colorKeyMIN).toFixed(2));
+						d3.select("#colorKeyMaxLabel").text(parseFloat(colorKeyMAX).toFixed(2));
+						if(colorsArray){
+							d3.select("#colorKeyMinColorbox").style("background-color", colorsArray[0]);
+							d3.select("#colorKeyMaxColorbox").style("background-color", colorsArray[9]);
+							var htmlForColorKey = "";
+							for(var x=0; x < colorsArray.length; x++){
+								htmlForColorKey += "<span style='background-color:"+colorsArray[x]+"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>";
+							}
+							d3.select("#colorKeyALL").html(htmlForColorKey);
+						}
                     });
                 }
 
@@ -287,16 +430,23 @@
 
                 function showForYears(currentYear, endYear) {
                     //console.log("YEAR: " + currentYear);
-                    d3.select("#currentYearHeader").text(currentYear);
-                    document.getElementById('yearRange').stepUp();
-                    updateAll(currentYear);
-                    if (currentYear < endYear) {
+                    if(APP_PAUSED){
+                        setTimeout(showForYears, ANIMATION_TIMEOUT, currentYear, endYear);
+                    } else if (currentYear < endYear) {
+						d3.select("#currentYearHeader").text(currentYear);
+						document.getElementById('yearRange').stepUp();
+						updateAll(currentYear);
                         setTimeout(showForYears, ANIMATION_TIMEOUT, ++currentYear, endYear);
                     }
                 }
 
                 d3.select("#yearRangePlayBtn").on("click", function() {
+                	APP_PAUSED = false;
                     playYears();
+                });
+
+                d3.select("#yearRangePauseBtn").on("click", function() {
+                    APP_PAUSED = !APP_PAUSED;
                 });
 
 
@@ -310,9 +460,7 @@
                     return "#CCCCCC";
                 }
 
-                function repaintMap(countryColors) {
-
-                    console.log("---------> repaintMap");
+                function repaintMap(countryColors, countryValues) {
 					initSVG();
                     var world = svg.selectAll("path.land").data(countries).enter().append("path").attr("class", "land").attr("d", path).attr("fill", function(d) {
                             return getCountryFillColor(d, countryColors);
@@ -337,7 +485,7 @@
                         //Mouse events
                         .on("mouseover", function(d) {
                             var chartTypeSelectedOptionText = getChartTypeSelectionText()
-                            countryTooltip.text(chartTypeSelectedOptionText + ": " + countryById[d.id])
+                            countryTooltip.text(chartTypeSelectedOptionText + ": " + countryById[d.id]) // + ":" + countryValues[d.id])
                                 .style("left", (d3.event.pageX + 7) + "px")
                                 .style("top", (d3.event.pageY - 15) + "px")
                                 .style("display", "block")
@@ -402,9 +550,11 @@
         </script>
 
     </div>
-	<ul>
-		<li><i>(Country is colored gray when statistic is not available)</i></li>
-		<li><i>All data scraped and merged from <a href="http://data.worldbank.org/indicator" target="_blank">http://data.worldbank.org/indicator</a></i></li>
+	<ul style="margin-left:75px;margin-right:75px;">
+		<li>All data scraped and merged from <a href="http://data.worldbank.org/indicator" target="_blank">http://data.worldbank.org/indicator</a></li>
+		<li>The min and max values were calculated for each year and then colors were chosen based on that year's percentile.</li>
+		<li>Country is colored gray when statistic is not available</li>
+		<!--li>Mouse over countries to see value of selected statistic</li-->
 	</ul>
 
 </body>

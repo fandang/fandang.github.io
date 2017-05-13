@@ -75,6 +75,19 @@
         font-size: 14px;
         font-family: sans-serif;
     }
+
+    #yearDataTable {
+		border-collapse: collapse;
+		border:1px solid #EEEEEE;
+		width:80%;
+	}
+    #yearDataTable td {
+		border:1px solid #EEEEEE;
+		padding-left:10px;
+		padding-right:10px;
+		padding-top:5px;
+		padding-bottom:5px;
+	}
 </style>
 
 <body>
@@ -86,15 +99,18 @@
 
         <fieldset>
 
+			<input type="button" id="showUSAButton" value="Go to USA" />
+
             <div>
                 <label class="selectBoxLabel" for="charts">Select Chart:</label>
                 <select class="selectBoxClazz" name="charts" id="charts">
-				<option value="HEALTH_EXPENDITURE_PER_CAPITA">Health Expenditure Per Capita</option>
-				<option value="LIFE_EXPECTANCY_AT_BIRTH">Life Expectancy at Birth</option>
-				<option value="GOV_DEBT_PCT_OF_GDP">Gov Debt Pct. of GDP</option>
-				<option value="GDP_PER_CAPITA">GDP per Capita</option>
-				<option value="IMPORTS_PCT_OF_GDP">Imports % of GDP</option>
-				<option value="GOV_ED_SPEND_PCT_GDP">Gov Education Spending: Pct. of GDP</option>
+					<option value="HEALTH_EXPENDITURE_PER_CAPITA">Health Expenditure Per Capita</option>
+					<option value="LIFE_EXPECTANCY_AT_BIRTH">Life Expectancy at Birth</option>
+					<option value="GOV_DEBT_PCT_OF_GDP">Gov Debt Pct. of GDP</option>
+					<option value="GDP_PER_CAPITA">GDP per Capita</option>
+					<option value="IMPORTS_PCT_OF_GDP">Imports % of GDP</option>
+					<option value="GOV_ED_SPEND_PCT_GDP">Gov Education Spending: Pct. of GDP</option>
+					<option value="CHAOS">CHAOS CHAOS CHAOS CHAOS CHAOS</option>
 				</select>
                 <span id="colorSquare" style="border:1px solid #333333;width:20px;height:20px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
             </div>
@@ -108,6 +124,10 @@
             <input id="yearRangePlayBtn" type="button" value="Play!" />
             <input id="yearRangePauseBtn" type="button" value="Pause" />
 
+			<input type="radio" name="speed" value="1000"> Slow</input>
+			<input type="radio" name="speed" value="500" checked="checked"> Medium</input>
+			<input type="radio" name="speed" value="100"> Fast</input>
+
 			<div id="colorKey" style="font-weight:bold;padding:5px;">MIN:&nbsp;&nbsp;<span id="colorKeyMinLabel"></span>&nbsp;&nbsp;<span id="colorKeyMinColorbox">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;&nbsp;MAX:&nbsp;&nbsp;<span id="colorKeyMaxLabel"></span>&nbsp;&nbsp;<span id="colorKeyMaxColorbox">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
 			<div id="colorKeyALL" style="padding:5px;"></div>
 
@@ -119,14 +139,15 @@
         <script language="JavaScript">
 			var APP_PAUSED = false;
 			var START_YEAR = 1990; // 1960;
-			var END_YEAR = 2015;
-        	var ANIMATION_TIMEOUT = 500;
+			var END_YEAR = 2014;
             var green_colors_health_expenditures = ["#E9F7EF", "#D4EFDF", "#A9DFBF", "#7DCEA0", "#52BE80", "#27AE60", "#229954", "#1E8449", "#196F3D", "#145A32"];
-            var red_colors_life_exp_at_birth = ["#AA0000", "#990000", "#880000", "#770000", "#660000", "#550000", "#440000", "#330000", "#220000", "#110000"];
+            var red_colors_life_exp_at_birth = ["#FF0000", "#EE0000", "#DD0000", "#CC0000", "#BB0000", "#AA0000", "#990000", "#880000", "#770000", "#660000"];
             var purple_colors_debt_gdp = ["#a569bd", "#8e44ad", "#884ea0", "#7d3c98", "#76448a", "#6c3483", "#633974", "#5b2c6f", "#512e5f", "#4a235a"];
             var yellow_colors_gdp_per_capita = ["#FFFFEE", "#FFFFCC", "#FFFF99", "#FFFF66", "#FFFF33", "#FFFF00", "#CCCC00", "#999900", "#666600", "#333300"];
             var orange_colors_imports_2_gdp = ["#fff6e5", "#ffedcc", "#ffe4b2", "#ffdb99", "#ffd27f", "#ffc966", "#ffc04c", "#ffb732", "#ffae19", "#ffa500"];
             var blue_colors_education_pct_gdp = ["#e5e5ff", "#ccccff", "#b2b2ff", "#9999ff", "#7f7fff", "#6666ff", "#4c4cff", "#3232ff", "#1919ff", "#0000ff"];
+            var random_colors_chaos = ["red", "yellow", "blue", "green", "orange", "purple", "aqua", "brown", "greenYellow", "darkGray"];
+
 
             var DEBUG = false;
             var width = 600;
@@ -167,37 +188,23 @@
                 var countryById = {};
                 var countries = topojson.feature(world, world.objects.countries).features;
 
+				var COUNTRY_USA = null;
+
                 countryData.forEach(function(d) {
                     countryById[d.id] = d.name;
                     option = d3.select("#countries").append("option");
                     option.text(d.name);
                     option.property("value", d.id);
+                    if(d.id == 840){
+                    	COUNTRY_USA = d;
+                    }
+                    console.log(d.id + " + " + d.name);
                 });
 
-				d3.select('#countries').property('value', '840');
 				d3.select("#countries").on("show", function() {
-					alert('LOAD');
-					var rotate = projection.rotate(),
-					focusedCountry = country(countries, this),
-					p = d3.geo.centroid(focusedCountry);
-
-                        (function transition() {
-                            d3.transition()
-                                .duration(2500)
-                                .tween("rotate", function() {
-                                    var r = d3.interpolate(projection.rotate(), [-p[0], -p[1]]);
-                                    return function(t) {
-                                        projection.rotate(r(t));
-                                        svg.selectAll("path").attr("d", path)
-                                            .classed("focused", function(d, i) {
-                                                return d.id == focusedCountry.id ? focused = d : false;
-                                            });
-                                    };
-                                })
-                        })();
-
+					var focusedCountry = country(countries, this);
+					globeRotate(focusedCountry);
 				});
-
 
                 function getChartTypeSelectionText() {
                     var chartTypeSelectedIndex = document.getElementById("charts");
@@ -226,12 +233,14 @@
                         d3.select("#colorSquare").style("background-color", "orange");
                     } else if (selectedChartOption == "GOV_ED_SPEND_PCT_GDP") {
                         d3.select("#colorSquare").style("background-color", "blue");
+                    } else if (selectedChartOption == "CHAOS") {
+                        d3.select("#colorSquare").style("background-color", "white");
                     }
                 }
 
                 setChartColorBox();
 
-                updateAll(2005);
+                updateAll(1960);
 
                 function updateAll(yearToShow) {
 					var colorKeyMIN;
@@ -252,7 +261,7 @@
                         });
 
                         if (DEBUG) {
-                            console.log("***** (COUNTRY,YEAR,HEALTH_EXPENDITURE_PER_CAPITA,LIFE_EXPECTANCY_AT_BIRTH,GOV_DEBT_PCT_OF_GDP,GDP_PER_CAPITA,IMPORTS_PCT_OF_GDP,GOV_ED_SPEND_PCT_GDP) *****");
+                            console.log("***** (COUNTRY,YEAR,HEALTH_EXPENDITURE_PER_CAPITA,LIFE_EXPECTANCY_AT_BIRTH,GOV_DEBT_PCT_OF_GDP,GDP_PER_CAPITA,IMPORTS_PCT_OF_GDP,GOV_ED_SPEND_PCT_GDP,CHAOS) *****");
                         }
 
 						var minHealthExpPerCapita = -1;
@@ -267,8 +276,11 @@
 						var maxImportsPctOfGDP = -1;
 						var minGovEdSpendPctGDP = -1;
 						var maxGovEdSpendPctGDP = -1;
+						var minChaos = -1;
+						var maxChaos = -1;
 
                         dataForYear.forEach(function(d) {
+
                         	// INITIALIZE the mins and maxes if NULL
                         	if(minHealthExpPerCapita == -1 && d.HEALTH_EXPENDITURE_PER_CAPITA != 'NA'){
 								minHealthExpPerCapita = d.HEALTH_EXPENDITURE_PER_CAPITA;
@@ -305,6 +317,12 @@
                         	}
                         	if(maxGovEdSpendPctGDP == -1 && d.GOV_ED_SPEND_PCT_GDP != 'NA'){
 								maxGovEdSpendPctGDP = d.GOV_ED_SPEND_PCT_GDP;
+                        	}
+                        	if(minChaos == -1 && d.CHAOS != 'NA'){
+								minChaos = d.CHAOS;
+                        	}
+                        	if(maxChaos == -1 && d.CHAOS != 'NA'){
+								maxChaos = d.CHAOS;
                         	}
 
 							// stat 1:
@@ -349,8 +367,16 @@
 							if(d.GOV_ED_SPEND_PCT_GDP != 'NA' && d.GOV_ED_SPEND_PCT_GDP > maxGovEdSpendPctGDP){
 								maxGovEdSpendPctGDP = d.GOV_ED_SPEND_PCT_GDP;
 							}
+							// stat 7:
+							if(d.CHAOS != 'NA' && d.CHAOS < minChaos){
+								minChaos = d.CHAOS;
+							}
+							if(d.CHAOS != 'NA' && d.CHAOS > maxChaos){
+								maxChaos = d.CHAOS;
+							}
 						});
 
+                        var thisYearHTMLData = "<table id='yearDataTable'>";
                         dataForYear.forEach(function(d) {
                             var selectedChartOption = getChartTypeSelectionValue();
                             if (DEBUG) {
@@ -362,7 +388,6 @@
                             colorToShow = "pink";
 
                             if (selectedChartOption == "HEALTH_EXPENDITURE_PER_CAPITA") {
-								console.log(minHealthExpPerCapita + ' ( ' + d.HEALTH_EXPENDITURE_PER_CAPITA + ' ) ' + maxHealthExpPerCapita);
                                 statToShowNotNormalized = d.HEALTH_EXPENDITURE_PER_CAPITA;
                                 statToShow = (d.HEALTH_EXPENDITURE_PER_CAPITA - minHealthExpPerCapita) / (maxHealthExpPerCapita - minHealthExpPerCapita);
                                 colorsArray = colorToShow = green_colors_health_expenditures;
@@ -398,15 +423,29 @@
                                 colorsArray = colorToShow = blue_colors_education_pct_gdp;
 								colorKeyMIN = minGovEdSpendPctGDP;
 								colorKeyMAX = maxGovEdSpendPctGDP;
+                            } else if (selectedChartOption == "CHAOS") {
+                                statToShowNotNormalized = d.CHAOS;
+                                statToShow = (d.CHAOS - minChaos) / (maxChaos - minChaos);
+                                colorsArray = colorToShow = random_colors_chaos;
+								colorKeyMIN = minChaos;
+								colorKeyMAX = maxChaos;
                             } else {
                             	alert("not handling chart type selection: " + selectedChartOption);
                             }
+
+
 
 							console.log('statToShow = ' + statToShow)
 							// The values were normalized to the 0 to 1 range, so now multiply by 10 to see which array index to use
                             countryColors[d.COUNTRY] = colorToShow[Math.floor(statToShow * 10)];
                             countryValues[d.COUNTRY] = statToShowNotNormalized;
+                            thisYearHTMLData += ("<tr><td>" + d.COUNTRY + "</td><td align='right'>" + parseFloat(statToShowNotNormalized).toFixed(2) + "</td></tr>");
                         });
+                        thisYearHTMLData += ("</table>");
+
+						d3.select("#theDataSectionYear").html(yearToShow);
+						d3.select("#theDataSectionStatName").html(getChartTypeSelectionText());
+						d3.select("#rawData").html(thisYearHTMLData);
 
                         repaintMap(countryColors, countryValues);
 						d3.select("#colorKeyMinLabel").text(parseFloat(colorKeyMIN).toFixed(2));
@@ -430,13 +469,14 @@
 
                 function showForYears(currentYear, endYear) {
                     //console.log("YEAR: " + currentYear);
+                    var animationTimeout = d3.select('input[name="speed"]:checked').node().value
                     if(APP_PAUSED){
-                        setTimeout(showForYears, ANIMATION_TIMEOUT, currentYear, endYear);
+                        setTimeout(showForYears, animationTimeout, currentYear, endYear);
                     } else if (currentYear < endYear) {
 						d3.select("#currentYearHeader").text(currentYear);
 						document.getElementById('yearRange').stepUp();
 						updateAll(currentYear);
-                        setTimeout(showForYears, ANIMATION_TIMEOUT, ++currentYear, endYear);
+                        setTimeout(showForYears, animationTimeout, ++currentYear, endYear);
                     }
                 }
 
@@ -512,14 +552,14 @@
 					d3.select("#yearRange").attr("min",START_YEAR).attr("max", END_YEAR).attr("value",START_YEAR);
 
                     d3.select("select#countries").on("change", function() {
-                        var rotate = projection.rotate(),
-                            focusedCountry = country(countries, this),
-                            p = d3.geo.centroid(focusedCountry);
-
-                        svg.selectAll(".focused").classed("focused", focused = false);
-
+                        focusedCountry = country(countries, this);
                         //Globe rotating
+						globeRotate(focusedCountry);
+                    });
 
+					function globeRotate(focusedCountry){
+						var rotate = projection.rotate();
+						var p = d3.geo.centroid(focusedCountry);
                         (function transition() {
                             d3.transition()
                                 .duration(2500)
@@ -534,7 +574,14 @@
                                     };
                                 })
                         })();
-                    });
+                    };
+
+
+					d3.select("#showUSAButton").on("click", function() {
+		                var z = "whatever";
+		                console.log(z + " = " + COUNTRY_USA.id);
+		                //globeRotate(COUNTRY_USA);
+					});
 
                     function country(cnt, sel) {
                         for (var i = 0, l = cnt.length; i < l; i++) {
@@ -543,19 +590,25 @@
                             }
                         }
                     };
-
                 }
-
             };
         </script>
 
     </div>
-	<ul style="margin-left:75px;margin-right:75px;">
+    <div style="margin-left:75px;margin-right:75px;">
+	<ul>
 		<li>All data scraped and merged from <a href="http://data.worldbank.org/indicator" target="_blank">http://data.worldbank.org/indicator</a></li>
 		<li>The min and max values were calculated for each year and then colors were chosen based on that year's percentile.</li>
 		<li>Country is colored gray when statistic is not available</li>
 		<!--li>Mouse over countries to see value of selected statistic</li-->
 	</ul>
+
+	<center>
+		<h3>The DATA: <span id="theDataSectionYear"></span>&nbsp;<span id="theDataSectionStatName"></span></h3>
+		<div id="rawData"></div>
+	</center>
+
+	</div>
 
 </body>
 
